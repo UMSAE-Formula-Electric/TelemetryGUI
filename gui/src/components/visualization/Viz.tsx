@@ -19,6 +19,7 @@ import ToggleSwitch from "../ToggleSwitch";
 import ProgressBar from "../ProgressBar";
 import Faults from "../Faults";
 import { getFaultFlag, clearFaults } from "../../modules/faults";
+import favourites, { Favourite } from "./favourites";
 
 type Frequency = "High" | "Low";
 
@@ -37,6 +38,7 @@ type VizState = {
   savingLog: boolean;
   step: number;
   maxSteps: number;
+  favourites: Favourite[];
 };
 
 export default class DataViz extends Component<VizProps, VizState> {
@@ -54,6 +56,7 @@ export default class DataViz extends Component<VizProps, VizState> {
       savingLog: false,
       step: 0,
       maxSteps: 0,
+      favourites: favourites,
     };
   }
 
@@ -159,7 +162,8 @@ export default class DataViz extends Component<VizProps, VizState> {
       savingLog,
       selectedLog,
       maxSteps,
-      step,
+      step, // step was for the progress bar (i believe) which is now deleted
+      favourites,
     } = this.state;
     const { sp } = this.props;
     return (
@@ -169,9 +173,7 @@ export default class DataViz extends Component<VizProps, VizState> {
             style={{
               display: "flex",
               flexDirection: "column",
-              margin: "1% 2%",
-              alignSelf: "center",
-              height: "65px",
+              margin: "0 0.5vw",
             }}
           >
             <span
@@ -220,41 +222,74 @@ export default class DataViz extends Component<VizProps, VizState> {
           )}
         </Container>
         <Footer>
-          <span>
-            <Button
-              onClick={() => this.liveLog("Low")}
-              disabled={!(sp && sp.isOpen()) || downloading || savingLog}
-              style={{ justifySelf: "start", marginRight: "5px" }}
-            >
-              {`${liveLogging ? "Cancel" : "Low Frequency"} Live Log`}
+          <Button onClick={this.saveLog} disabled={downloading || savingLog}>
+            Save Log
+          </Button>
+          <Button
+            onClick={() => this.liveLog("Low")}
+            disabled={!(sp && sp.isOpen()) || downloading || savingLog}
+            style={{ justifySelf: "start", marginRight: "5px" }}
+          >
+            {`${liveLogging ? "Cancel" : "Low Frequency"} Live Log`}
+          </Button>
+          <Button
+            onClick={() => this.liveLog("High")}
+            disabled={!(sp && sp.isOpen()) || downloading || savingLog}
+            style={{ justifySelf: "start" }}
+          >
+            {`${liveLogging ? "Cancel" : "High Frequency"} Live Log`}
+          </Button>
+          {/* <ProgressBar  ={ } max={maxSteps} enable={  > 100} /> */}
+          <Button
+            onClick={this.downloadLog}
+            disabled={!(sp && sp.isOpen()) || liveLogging || savingLog}
+            style={{ justifySelf: "start", marginRight: "5px" }}
+          >
+            {`${downloading ? "Cancel Download" : "Download Data Log"}`}
+          </Button>
+          {process.env.NODE_ENV === "development" && (
+            <Button onClick={() => sp && sp._emit(new Buffer(returnArray()))}>
+              TEST EMIT
             </Button>
-            <Button
-              onClick={() => this.liveLog("High")}
-              disabled={!(sp && sp.isOpen()) || downloading || savingLog}
-              style={{ justifySelf: "start" }}
-            >
-              {`${liveLogging ? "Cancel" : "High Frequency"} Live Log`}
-            </Button>
-          </span>
-          <ProgressBar step={step} max={maxSteps} enable={step > 100} />
-          <span style={{ display: "flex" }}>
-            <Button
-              onClick={this.downloadLog}
-              disabled={!(sp && sp.isOpen()) || liveLogging || savingLog}
-              style={{ justifySelf: "start", marginRight: "5px" }}
-            >
-              {`${downloading ? "Cancel Download" : "Download Data Log"}`}
-            </Button>
-            {process.env.NODE_ENV === "development" && (
-              <Button onClick={() => sp && sp._emit(new Buffer(returnArray()))}>
-                TEST EMIT
-              </Button>
-            )}
-            <Button onClick={this.saveLog} disabled={downloading || savingLog}>
-              Save Log
-            </Button>
-          </span>
+          )}
         </Footer>
+        <Menu>
+          <MenuContainer>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                paddingLeft: "2%",
+              }}
+            >
+              <Header>Favourites</Header>
+            </div>
+            <FavouritesContainer>
+              {/* probably need a system here where we have all parameters, and a preset min
+                and max value for them. Then, we can compare the reading to its min and max
+              to determine its background colour */}
+              {favourites.map(({ name, value, color }, index) => (
+                <FavouriteCard key={index} backgroundColor={color}>
+                  <p style={{ margin: 0, fontWeight: 500 }}>{name}</p>
+                  <div style={{ alignSelf: "center" }}>
+                    <p style={{ margin: 0, fontSize: "30px", fontWeight: 500 }}>
+                      {value}
+                    </p>
+                  </div>
+                </FavouriteCard>
+              ))}
+            </FavouritesContainer>
+          </MenuContainer>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Button>Add New Favourite</Button>
+          </div>
+        </Menu>
       </>
     );
   }
@@ -314,6 +349,37 @@ function TabSelect({
   );
 }
 
+const FavouritesContainer = styled.div`
+  display: grid;
+  grid-auto-rows: max-content;
+  row-gap: 2vh;
+  padding: 1% 2%;
+  overflow-y: scroll;
+`;
+
+const FavouriteCard = styled.div<{ backgroundColor?: string }>`
+  display: flex;
+  flex-direction: column;
+  padding: 2% 4% 4% 4%;
+  border 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  background-color: ${({ backgroundColor }) => backgroundColor || "white"}
+`;
+
+const Menu = styled.div`
+  grid-area: menu;
+  display: grid;
+  background-color: #e4e4e4;
+  grid-template-rows: 9fr 1fr;
+`;
+
+const MenuContainer = styled.div`
+  display: grid;
+  grid-template-rows: 1fr 8fr;
+  padding: 0.5vw 0.5vw 0 0.5vw;
+  overflow-y: scroll;
+`
+
 const StyledTabs = styled.span`
   & > * {
     margin-right: 17.5px;
@@ -334,28 +400,25 @@ const Tab = styled.h4<{ selected?: boolean }>`
 `;
 
 const Header = styled.h2`
-    margin: 0;
-    float: left;
-    display: inline-block
-    color: #000000;
-    cursor: default;
+  margin: 0;
+  color: #000000;
+  cursor: default;
 `;
 
 const Footer = styled.div`
-  width: 100%;
-  display: grid;
-  padding: 1%;
-  grid-template-columns: 1fr 2fr 1fr;
-  justify-items: center;
+  grid-area: footer;
+  display: flex;
+  padding: 0 2%;
+  justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
-  background-color: #E4E4E4;
+  background-color: #e4e4e4;
 `;
 
 const Container = styled.div`
   padding: 1%;
   display: grid;
-  grid-template-rows: 1fr 7fr;
+  grid-template-rows: 1fr 9fr;
   overflow: hidden;
   background-color: #ffffff;
 `;

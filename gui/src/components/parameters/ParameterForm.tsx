@@ -200,7 +200,8 @@ export default class ParameterForm extends Component<
               // filter out parameters that don't match search
               .filter(
                 ([id, { description, name }]) =>
-                  description.includes(search) || name.includes(search),
+                  description.toLowerCase().includes(search) ||
+                  name.toLowerCase().includes(search),
               )
               .map(([id, { name, description, type, unit, value, valid }]) => (
                 <Entry key={id} valid={valid} title={`${description}: ${type}`}>
@@ -225,7 +226,7 @@ export default class ParameterForm extends Component<
           >
             Write Paramters
           </Button>
-          <ProgressBar
+          {/* <ProgressBar
             step={step}
             max={Object.entries(params).length + 1}
             enable={writing}
@@ -236,10 +237,12 @@ export default class ParameterForm extends Component<
             >
               {status}
             </span>
-          )}
+          )} */}
         </Footer>
         <Menu>
-          <div style={{ display: "flex", alignItems: "center", paddingLeft: "2%" }}>
+          <div
+            style={{ display: "flex", alignItems: "center", paddingLeft: "2%" }}
+          >
             <Header>Profiles</Header>
           </div>
           <ProfilesContainer>
@@ -279,17 +282,16 @@ const ProfileCard = styled.div<{ selected: boolean }>`
   background-color: ${({ selected }) => (selected ? "white" : "none")};
   border-radius: 10px;
   padding: 8px;
-  ${({ selected }) => selected && "box-shadow: 0 4px 5px rgba(0, 0, 0, 0.3);"}
+  ${({ selected }) => selected && "box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);"}
   &:hover {
     cursor: pointer;
-  };
-
+  } ;
 `;
 
 const ProfileName = styled.p`
   margin: 0 0 0 10px;
   font-size: 20px;
-  font-weight: bold;
+  font-weight: 500;
 `;
 
 const ProfileImage = styled.div<{
@@ -301,6 +303,7 @@ const ProfileImage = styled.div<{
   width: 35px;
   height: 35px;
   border-radius 17.5px;
+  border: 0.8px solid rgb(0, 0, 0, 0.15);
   font-size: 20px;
   font-weight: bold;
   background-color: ${({ backgroundColor }) => backgroundColor};
@@ -311,7 +314,6 @@ const ProfilesContainer = styled.div`
   grid-auto-rows: max-content;
   grid-auto-columns: 97%;
   row-gap: 8px;
-  flex-direction: column;
   padding: 1% 2%;
   overflow-y: scroll;
 `;
@@ -325,7 +327,7 @@ const Menu = styled.div`
 `;
 
 const Search = styled.input`
-  background-color: #E4E4E4;
+  background-color: #e4e4e4;
   border: 0;
   padding: 1%;
   width: 45%;
@@ -344,9 +346,9 @@ const Footer = styled.div`
   grid-template-columns: 1.5fr 6fr 2fr;
   justify-items: center;
   align-items: center;
-  padding: 1%;
+  padding: 2%;
   box-sizing: border-box;
-  background-color: #ffffff;
+  background-color: #e4e4e4;
 `;
 
 const Container = styled.div`
@@ -359,22 +361,22 @@ const Container = styled.div`
 `;
 
 const Entry = styled.div<{ valid: boolean }>`
-    display: flex;
-    align-items: center;
-    background-color: ${({ valid }) => (valid ? "#E4E4E4" : "#B0002030")};
-    height: 100%;
-    padding: 0 1vw;
-    border: ${({ valid }) => (valid ? "0" : "1px solid #B0002060")}
-    &: hover{
-        border: ${({ valid }) =>
-          valid ? "1px solid #333333" : "1px solid #B00020"}
-    }
+  display: flex;
+  align-items: center;
+  background-color: ${({ valid }) => (valid ? "#E4E4E4" : "#B0002030")};
+  height: 100%;
+  padding: 0 1vw;
+  border-radius: 10px;
+  font-weight: bold;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  border: ${({ valid }) => (valid ? "0" : "1px solid #B0002060")};
 `;
 const Scrollable = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(30.5vw, 1fr));
   grid-auto-rows: 7vh;
-  grid-gap: 7.5px;
+  grid-gap: 15px;
   overflow-y: scroll;
   padding: 0 0.5vw;
+  padding-top: 1vh;
 `;

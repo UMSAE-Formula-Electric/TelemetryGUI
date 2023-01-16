@@ -24,7 +24,7 @@ const profiles: Profile[] = [
   {
     name: "Experienced",
     initial: "E",
-    backgroundColor: "pink",
+    backgroundColor: "red",
     selected: false,
     presets: ["100", "98", "1000", "12.75"],
   },

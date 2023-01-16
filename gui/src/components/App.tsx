@@ -7,6 +7,7 @@ import SerialPort from "serialport";
 import ParameterForm from "./parameters/ParameterForm";
 import { Header } from "./Header";
 import DataViz from "./visualization/Viz";
+import DebugForm from "./debug/DebugForm";
 import Titlebar from "react-electron-titlebar";
 import Faults from "./Faults";
 import { getFaultFlag } from "../modules/faults";
@@ -98,7 +99,7 @@ class App extends Component<{}, AppState> {
             <Titlebar title="Motor Controller" backgroundColor="#000000" />
           </div>
         )}
-        <Grid>
+        <Grid mode={mode}>
           <Header
             onConnect={this.connect}
             onDisconnect={this.disconnect}
@@ -132,18 +133,22 @@ function ComponentSwitch({
       return <ParameterForm sp={sp} toggle={toggle} />;
     case "viz":
       return <DataViz sp={sp} toggle={toggle} />;
+    case "debug":
+      return <DebugForm />;
   }
 }
 
-export type Mode = "config" | "viz";
+export type Mode = "config" | "viz" | "debug";
 
-const Grid = styled.div`
-  height: calc(98vh);
+const Grid = styled.div<{ mode: string }>`
+  height: calc(96vh);
   display: grid;
-  grid-template-rows: 1fr 9fr 1fr;
+  ${({ mode }) =>
+    mode === "debug"
+      ? "grid-template-rows: 1fr 10fr"
+      : "grid-template-rows: 1fr 9fr 1fr"};
   grid-template-columns: 4fr 1fr;
-  gap: 2px;
-  padding: 0.25%;
+  grid-gap: 0.5px;
   box-sizing: border-box;
   grid-template-areas:
     "header header"
